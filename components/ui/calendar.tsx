@@ -1,21 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import * as React from "react"
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react"
+import * as React from "react"
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
 
-import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { es } from "date-fns/locale"
 
 function Calendar({
   className,
   classNames,
-  showOutsideDays = true,
-  captionLayout = "label",
+  locale = es,
+  showOutsideDays = false,
+  captionLayout = "dropdown",
   buttonVariant = "ghost",
   formatters,
   components,
@@ -29,19 +32,22 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-white group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent dark:bg-neutral-950",
+        "bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "dark:bg-background", // Asegura el fondo en dark mode
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
       )}
       captionLayout={captionLayout}
       formatters={{
-        formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
+        formatMonthDropdown: (date, options) =>
+          date.toLocaleString(locale?.code || "es-ES", { month: "long" }),
+        formatYearDropdown: (date, options) =>
+          date.toLocaleString(locale?.code || "es-ES", { year: "numeric" }),
         ...formatters,
       }}
       classNames={{
-        root: cn("w-fit", defaultClassNames.root),
+        root: cn("w-fit", "bg-background", "dark:bg-background", defaultClassNames.root),
         months: cn(
           "relative flex flex-col gap-4 md:flex-row",
           defaultClassNames.months
@@ -66,28 +72,35 @@ function Calendar({
           defaultClassNames.month_caption
         ),
         dropdowns: cn(
-          "flex h-[--cell-size] w-full items-center justify-center gap-1.5 text-sm font-medium",
+          "flex h-[--cell-size] w-full items-center justify-center gap-1.5 text-sm font-medium ",
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "has-focus:border-neutral-950 border-neutral-200 shadow-xs has-focus:ring-neutral-950/50 has-focus:ring-[3px] relative rounded-md border dark:has-focus:border-neutral-300 dark:border-neutral-800 dark:has-focus:ring-neutral-300/50",
+          "has-focus:border-ring border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] relative rounded-md border",
+          // aseguras fondo y texto
+          "bg-background ",
+          "text-foreground dark:text-white",
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
-          "bg-white absolute inset-0 opacity-0 dark:bg-neutral-950",
+          "absolute inset-0 opacity-0",
+          "dark:bg-background",
+          // forzamos color de texto en opciones
+          "text-foreground dark:text-white",
           defaultClassNames.dropdown
         ),
+
         caption_label: cn(
           "select-none font-medium",
           captionLayout === "label"
             ? "text-sm"
-            : "[&>svg]:text-neutral-500 flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5 dark:[&>svg]:text-neutral-400",
+            : "[&>svg]:text-muted-foreground flex h-8 items-center gap-1 rounded-md pl-2 pr-1 text-sm [&>svg]:size-3.5",
           defaultClassNames.caption_label
         ),
         table: "w-full border-collapse",
         weekdays: cn("flex", defaultClassNames.weekdays),
         weekday: cn(
-          "text-neutral-500 flex-1 select-none rounded-md text-[0.8rem] font-normal dark:text-neutral-400",
+          "text-muted-foreground flex-1 select-none rounded-md text-[0.8rem] font-normal",
           defaultClassNames.weekday
         ),
         week: cn("mt-2 flex w-full", defaultClassNames.week),
@@ -96,29 +109,30 @@ function Calendar({
           defaultClassNames.week_number_header
         ),
         week_number: cn(
-          "text-neutral-500 select-none text-[0.8rem] dark:text-neutral-400",
+          "text-muted-foreground select-none text-[0.8rem]",
           defaultClassNames.week_number
         ),
         day: cn(
           "group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md",
+          "bg-background", "dark:bg-background", // Asegura fondo en días
           defaultClassNames.day
         ),
         range_start: cn(
-          "bg-neutral-100 rounded-l-md dark:bg-neutral-800",
+          "bg-accent rounded-l-md",
           defaultClassNames.range_start
         ),
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
-        range_end: cn("bg-neutral-100 rounded-r-md dark:bg-neutral-800", defaultClassNames.range_end),
+        range_end: cn("bg-accent rounded-r-md", defaultClassNames.range_end),
         today: cn(
-          "bg-neutral-100 text-neutral-900 rounded-md data-[selected=true]:rounded-none dark:bg-neutral-800 dark:text-neutral-50",
+          "bg-accent text-accent-foreground rounded-md data-[selected=true]:rounded-none",
           defaultClassNames.today
         ),
         outside: cn(
-          "text-neutral-500 aria-selected:text-neutral-500 dark:text-neutral-400 dark:aria-selected:text-neutral-400",
+          "text-muted-foreground aria-selected:text-muted-foreground",
           defaultClassNames.outside
         ),
         disabled: cn(
-          "text-neutral-500 opacity-50 dark:text-neutral-400",
+          "text-muted-foreground opacity-50",
           defaultClassNames.disabled
         ),
         hidden: cn("invisible", defaultClassNames.hidden),
@@ -201,7 +215,7 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "data-[selected-single=true]:bg-neutral-900 data-[selected-single=true]:text-neutral-50 data-[range-middle=true]:bg-neutral-100 data-[range-middle=true]:text-neutral-900 data-[range-start=true]:bg-neutral-900 data-[range-start=true]:text-neutral-50 data-[range-end=true]:bg-neutral-900 data-[range-end=true]:text-neutral-50 group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] [&>span]:text-xs [&>span]:opacity-70 dark:data-[selected-single=true]:bg-neutral-50 dark:data-[selected-single=true]:text-neutral-900 dark:data-[range-middle=true]:bg-neutral-800 dark:data-[range-middle=true]:text-neutral-50 dark:data-[range-start=true]:bg-neutral-50 dark:data-[range-start=true]:text-neutral-900 dark:data-[range-end=true]:bg-neutral-50 dark:data-[range-end=true]:text-neutral-900",
+        "data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square h-auto w-full min-w-[--cell-size] flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] [&>span]:text-xs [&>span]:opacity-70",
         defaultClassNames.day,
         className
       )}

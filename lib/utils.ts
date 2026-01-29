@@ -41,6 +41,20 @@ export const parseTimeToTodayDate = (time: string): Date => {
 export const formatDate = (date: Date) =>
   date.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 
+/**
+ * Formatea una fecha de forma segura para SSR/hidratación: usa los componentes
+ * UTC del día para que servidor y cliente muestren el mismo texto (evita
+ * diferencias por zona horaria).
+ */
+export function formatDateSafe(date: Date | string | undefined | null): string {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth();
+  const day = d.getUTCDate();
+  return format(new Date(y, m, day), "PPP", { locale: es });
+}
+
 export const calcularEdad = (birthDate: Date): number => {
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
