@@ -15,7 +15,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Calculator, ChevronDown, ChevronUp, File, FileCheck2, IdCardIcon, LayersIcon, LucideFilePen, MessageCircleMore, Package, Settings, ShieldPlus, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
+import { Calculator, ChevronDown, ChevronUp, File, FileCheck2, IdCardIcon, LayersIcon, LucideFilePen, MessageCircleMore, Package, Settings, ShieldPlus, Stethoscope, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
 import Link from "next/link";
 import { NavUser } from "./nav-user";
 import { ModeToggle } from "./buton-theme";
@@ -82,10 +82,10 @@ const items = [
     permiso: "ver_pacientes",
   },
   {
-    title: "Inventario",
-    url: "/inventario",
-    icon: Package,
-    permiso: "ver_inventario",
+    title: "Medicos",
+    url: "/medicos",
+    icon: Stethoscope,
+    permiso: "ver_medicos",
   },
   {
     title: "Voucher de Pago",

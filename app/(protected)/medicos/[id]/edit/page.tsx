@@ -1,0 +1,49 @@
+import { getSessionPermisos } from "@/auth";
+import HeaderComponent from "@/components/HeaderComponent";
+import NoAcceso from "@/components/noAccess";
+import { Pencil } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getMedicoById } from "../../actions";
+import { MedicoFormulario } from "@/app/(protected)/pacientes/components/Form";
+import { getEmpleados } from "@/app/(protected)/empleados/actions";
+import { getProfesionesActivas } from "@/app/(protected)/profesiones/actions";
+
+
+export default async function EditMedico({ params }: { params: { id: string } }) {
+  // Verificar permisos
+  const permisos = await getSessionPermisos();
+  if (!permisos?.includes("editar_medicos")) {
+    return <NoAcceso />;
+  }
+
+  // Obtener el médico por ID
+  const medico = await getMedicoById(params.id);
+  if (!medico) {
+    redirect("/medicos"); // Redirige si no existe
+  }
+
+  const empleados = await getEmpleados();
+  const profesiones = await getProfesionesActivas();
+  // Inicializamos solo los campos que usará el formulario
+  const initialData = {
+    idEmpleado: medico.idEmpleado,
+    profesionId: medico.profesionId,
+    activo: medico.activo,
+  };
+
+  return (
+    <div>
+      <HeaderComponent
+        Icon={Pencil}
+        description="En este apartado podrá editar un médico."
+        screenName="Editar Médico"
+      />
+      <MedicoFormulario
+        isUpdate={true}
+        empleados={empleados}
+        initialData={initialData}
+        profesiones={profesiones}
+      />
+    </div>
+  );
+}
