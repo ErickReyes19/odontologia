@@ -15,7 +15,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Calculator, ChevronDown, ChevronUp, File, FileCheck2, LayersIcon, LucideFilePen, MessageCircleMore, Package, Settings, ShieldPlus, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
+import { Calculator, ChevronDown, ChevronUp, File, FileCheck2, IdCardIcon, LayersIcon, LucideFilePen, MessageCircleMore, Package, Settings, ShieldPlus, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
 import Link from "next/link";
 import { NavUser } from "./nav-user";
 import { ModeToggle } from "./buton-theme";
@@ -51,6 +51,12 @@ const mantenimientoItems = [
     url: "/puestos",
     icon: UserRoundCheck,
     permiso: "ver_puestos",
+  },
+  {
+    title: "Profesiones",
+    url: "/profesiones",
+    icon: IdCardIcon,
+    permiso: "ver_profesiones",
   },
 
 

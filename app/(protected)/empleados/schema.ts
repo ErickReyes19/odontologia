@@ -39,6 +39,7 @@ export const EmpleadoSchema = z.object({
   usuario: z.string().optional(),
 
   puesto_id: z.string(),
+  profesion: z.string().min(1).optional(),
 
   // Estos campos ahora también son obligatorios
   puesto: z.string().min(1).optional(),

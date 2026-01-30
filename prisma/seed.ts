@@ -46,6 +46,11 @@ async function main() {
     { nombre: "ver_pacientes", descripcion: "Permiso para ver pacientes" },
     { nombre: "crear_pacientes", descripcion: "Permiso para crear pacientes" },
     { nombre: "editar_pacientes", descripcion: "Permiso para editar pacientes" },
+
+  // permisos profesiones
+    { nombre: "ver_profesiones", descripcion: "Permiso para ver profesiones" },
+    { nombre: "crear_profesiones", descripcion: "Permiso para crear profesiones" },
+    { nombre: "editar_profesiones", descripcion: "Permiso para editar profesiones" },
   ];
 
   const permisoIds: string[] = [];
