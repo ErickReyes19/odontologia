@@ -4,30 +4,61 @@ import { prisma } from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 import { revalidatePath } from 'next/cache';
 import { Paciente, PacienteSchema } from './schema';
+import { paginate } from '@/app/type';
+import { Prisma } from '@/lib/generated/prisma';
 
 /**
  * Obtiene todos los pacientes
  */
-export async function getPacientes(): Promise<Paciente[]> {
-    try {
-        const records = await prisma.paciente.findMany();
-        return records.map(r => ({
-            id: r.id,
-            nombre: r.nombre,
-            apellido: r.apellido,
-            identidad: r.identidad,
-            fechaNacimiento: r.fechaNacimiento ? new Date(r.fechaNacimiento) : null, // Date real
-            genero: r.genero,
-            telefono: r.telefono,
-            correo: r.correo,
-            direccion: r.direccion,
-            seguroId: r.seguroId || "",
-            activo: r.activo,
-        }));
-    } catch (error) {
-        console.error("Error al obtener los pacientes:", error);
-        return [];
-    }
+export async function getPacientes({
+  page = 1,
+  pageSize = 10,
+}: {
+  page?: number;
+  pageSize?: number;
+}) {
+  try {
+    const result = await paginate<Paciente, Prisma.PacienteWhereInput>({
+      model: prisma.paciente,
+      page,
+      pageSize,
+      orderBy: { nombre: "asc" },
+    });
+
+    // Mapeo igual al que ya tenías antes
+    const pacientes: Paciente[] = result.data.map((r) => ({
+      id: r.id,
+      nombre: r.nombre,
+      apellido: r.apellido,
+      identidad: r.identidad,
+      fechaNacimiento: r.fechaNacimiento
+        ? new Date(r.fechaNacimiento)
+        : null,
+      genero: r.genero,
+      telefono: r.telefono,
+      correo: r.correo,
+      direccion: r.direccion,
+      seguroId: r.seguroId || "",
+      activo: r.activo,
+    }));
+
+    return {
+      data: pacientes,
+      total: result.total,
+      page: result.page,
+      pageSize: result.pageSize,
+      pageCount: result.pageCount,
+    };
+  } catch (error) {
+    console.error("Error al obtener los pacientes:", error);
+    return {
+      data: [] as Paciente[],
+      total: 0,
+      page,
+      pageSize,
+      pageCount: 0, // 👈 aquí también usamos pageCount
+    };
+  }
 }
 
 /**

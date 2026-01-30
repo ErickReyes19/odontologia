@@ -1,19 +1,21 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
+import * as React from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import {
   ColumnDef,
+  SortingState,
   ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import * as React from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -22,94 +24,116 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+
+  // paginación del servidor
+  page: number;            // página actual (1,2,3...)
+  pageSize: number;        // tamaño de página
+  pageCount: number;       // total de páginas (viene del backend)
+  onPageChange: (page: number) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  page,
+  pageSize,
+  pageCount,
+  onPageChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters] = React.useState<ColumnFiltersState>(
-    []
-
-
-  );
-  const [globalFilter, setGlobalFilter] = React.useState<string>("");
-
+  const [columnFilters] = React.useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = React.useState("");
 
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    pageCount,
+    manualPagination: true, // 👈 paginación controlada por el servidor
+
     state: {
       sorting,
       columnFilters,
-      globalFilter, // Agregar el estado del filtro global
+      globalFilter,
+      pagination: {
+        pageIndex: page - 1, // TanStack usa índice base 0
+        pageSize,
+      },
     },
-    // Aplicar el filtro global a todas las columnas
+
+    onPaginationChange: (updater) => {
+      const next =
+        typeof updater === "function"
+          ? updater({ pageIndex: page - 1, pageSize })
+          : updater;
+
+      // volver a 1-based para tu backend
+      onPageChange(next.pageIndex + 1);
+    },
+
+    onSortingChange: setSorting,
+
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+
+    // filtro global simple por texto
     globalFilterFn: (row) => {
-      const rowValues = Object.values(row.original as string); // Obtener todos los valores de la fila
-      return rowValues.some((value) =>
+      const values = Object.values(row.original as any);
+      return values.some((value) =>
         String(value).toLowerCase().includes(globalFilter.toLowerCase())
-      ); // Comprobar si alguno de los valores incluye el filtro
+      );
     },
   });
 
   return (
     <div className="rounded-md border p-4">
-      <div className="flex flex-col md:flex-row items-center py-4 justify-between space-y-2 md:space-y-0 md:space-x-4">
+      {/* Buscador + botón nuevo */}
+      <div className="flex flex-col md:flex-row items-center py-4 justify-between gap-2">
         <Input
-          placeholder="Filtrar Datos"
+          placeholder="Filtrar datos..."
           value={globalFilter}
-          onChange={(event) => setGlobalFilter(event.target.value)}
+          onChange={(e) => setGlobalFilter(e.target.value)}
           className="w-full md:max-w-sm"
         />
-        <Link href={`/pacientes/create`} className="w-full md:w-auto">
+
+        <Link href="/pacientes/create" className="w-full md:w-auto">
           <Button className="w-full md:w-auto flex items-center gap-2">
             Nuevo paciente
-            <Plus />
+            <Plus className="h-4 w-4" />
           </Button>
         </Link>
       </div>
 
-      <div className="rounded-md border">
+      {/* Tabla */}
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="">
+                  <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="">
 
+          <TableBody>
+            {data.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -120,10 +144,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 "
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   Sin resultados.
                 </TableCell>
               </TableRow>
@@ -131,20 +152,27 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+
+      {/* Controles de paginación */}
+      <div className="flex items-center justify-between py-4">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
         >
           Anterior
         </Button>
+
+        <span className="text-sm text-muted-foreground">
+          Página {page} de {pageCount}
+        </span>
+
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= pageCount}
         >
           Siguiente
         </Button>
