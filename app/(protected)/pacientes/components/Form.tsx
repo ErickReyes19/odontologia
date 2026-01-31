@@ -306,21 +306,24 @@ export function PacienteFormulario({
               <FieldLabel>Seguro</FieldLabel>
               <FieldContent>
                 <Select
-                  value={field.value || ""}
-                  onValueChange={(val) => field.onChange(val || undefined)}
+                  value={field.value ?? ""}
+                  onValueChange={(val) =>
+                    field.onChange(val === "none" ? undefined : val)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un seguro (opcional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sin seguro</SelectItem>
-                    {seguros.map(seg => (
+                    <SelectItem value="none">Sin seguro</SelectItem>
+                    {seguros.map((seg) => (
                       <SelectItem key={seg.id} value={seg.id!}>
                         {seg.nombre}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+
               </FieldContent>
               <FieldDescription>Seguro medico del paciente (opcional).</FieldDescription>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

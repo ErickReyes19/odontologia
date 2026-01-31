@@ -66,6 +66,11 @@ async function main() {
     { nombre: "ver_consultorios", descripcion: "Permiso para ver consultorios" },
     { nombre: "crear_consultorios", descripcion: "Permiso para crear consultorios" },
     { nombre: "editar_consultorios", descripcion: "Permiso para editar consultorios" },
+
+    // permisos citas
+    { nombre: "ver_citas", descripcion: "Permiso para ver citas" },
+    { nombre: "crear_citas", descripcion: "Permiso para crear citas" },
+    { nombre: "editar_citas", descripcion: "Permiso para editar citas" },
   ];
 
   const permisoIds: string[] = [];
