@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCitaParaConsulta, getConsultaByCitaId, getServiciosDisponibles } from "./actions";
 import HeaderComponent from "@/components/HeaderComponent";
 import { ConsultaForm } from "./components/ConsultaForm";
+import { Calendar } from "lucide-react";
 
 interface ConsultaPageProps {
   params: Promise<{ id: string }>;
@@ -23,13 +24,14 @@ export default async function ConsultaPage({ params }: ConsultaPageProps) {
   return (
     <div className="container mx-auto py-6">
       <HeaderComponent
-        title="Consulta Medica"
+        Icon={Calendar}
+        screenName="Consulta Medica"
         description={`Paciente: ${cita.paciente?.nombre} ${cita.paciente?.apellido} | ${cita.paciente?.identidad}`}
-        breadcrumbs={[
-          { label: "Inicio", href: "/" },
-          { label: "Citas", href: "/citas" },
-          { label: "Consulta", href: `/citas/${id}/consulta` },
-        ]}
+        // breadcrumbs={[
+        //   { label: "Inicio", href: "/" },
+        //   { label: "Citas", href: "/citas" },
+        //   { label: "Consulta", href: `/citas/${id}/consulta` },
+        // ]}
       />
 
       <ConsultaForm 
