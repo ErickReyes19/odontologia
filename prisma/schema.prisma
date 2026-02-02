@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -44,18 +42,17 @@ model Rol {
   usuarios    Usuarios[]
 }
 
-
 model Empleados {
-  id        String  @id @default(uuid()) @db.VarChar(36)
-  puesto_id String  @db.VarChar(36)
+  id        String @id @default(uuid()) @db.VarChar(36)
+  puesto_id String @db.VarChar(36)
 
-  identidad  String    @db.VarChar(50)
-  nombre     String    @db.VarChar(100)
-  apellido   String    @db.VarChar(100)
-  correo     String    @db.LongText
+  identidad       String    @db.VarChar(50)
+  nombre          String    @db.VarChar(100)
+  apellido        String    @db.VarChar(100)
+  correo          String    @db.LongText
   FechaNacimiento DateTime? @db.DateTime(6)
-  fechaIngreso     DateTime? @db.DateTime(6)
-  telefono         String?   @db.VarChar(20)
+  fechaIngreso    DateTime? @db.DateTime(6)
+  telefono        String?   @db.VarChar(20)
 
   Vacaciones Int
   genero     String?  @db.VarChar(20)
@@ -64,24 +61,23 @@ model Empleados {
   updateAt   DateTime @updatedAt
 
   // Relaciones existentes
-  Puesto   Puesto   @relation(fields: [puesto_id], references: [Id], onDelete: Cascade, onUpdate: NoAction)
+  Puesto   Puesto    @relation(fields: [puesto_id], references: [Id], onDelete: Cascade, onUpdate: NoAction)
   Usuarios Usuarios?
 
   // NUEVA relación opcional 1-1
-  Medico   Medico?
+  Medico Medico?
 
   @@index([puesto_id])
 }
 
-
 model Puesto {
-  Id                      String                    @id @db.VarChar(36)
-  Nombre                  String                    @db.VarChar(100)
-  Descripcion             String                    @db.VarChar(100)
-  Activo                  Boolean                   @db.Bit(1)
-  createAt                DateTime                  @default(now())
-  updateAt                DateTime                  @updatedAt
-  Empleados               Empleados[]
+  Id          String      @id @db.VarChar(36)
+  Nombre      String      @db.VarChar(100)
+  Descripcion String      @db.VarChar(100)
+  Activo      Boolean     @db.Bit(1)
+  createAt    DateTime    @default(now())
+  updateAt    DateTime    @updatedAt
+  Empleados   Empleados[]
 }
 
 model Usuarios {
@@ -114,15 +110,15 @@ model PasswordResetToken {
 }
 
 model Seguro {
-  id          String    @id @default(uuid()) @db.VarChar(36)
-  nombre      String    @db.VarChar(100)
-  descripcion String?   @db.VarChar(255)
-  activo      Boolean   @db.Bit(1)
-  createAt    DateTime  @default(now())
-  updateAt    DateTime  @updatedAt
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  nombre      String   @db.VarChar(100)
+  descripcion String?  @db.VarChar(255)
+  activo      Boolean  @db.Bit(1)
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt
 
   // Relaciones
-  pacientes   Paciente[]
+  pacientes Paciente[]
 }
 
 model Paciente {
@@ -137,16 +133,19 @@ model Paciente {
   direccion       String?   @db.VarChar(255)
 
   // Seguro opcional
-  seguroId        String?   @db.VarChar(36)
-  seguro          Seguro?   @relation(fields: [seguroId], references: [id])
+  seguroId String? @db.VarChar(36)
+  seguro   Seguro? @relation(fields: [seguroId], references: [id])
 
-  activo          Boolean   @db.Bit(1)
-  createAt        DateTime  @default(now())
-  updateAt        DateTime  @updatedAt
+  activo   Boolean  @db.Bit(1)
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 
-  citas           Cita[]
+  citas        Cita[]
+  cotizaciones Cotizacion[]
 
   @@index([seguroId])
+  planTratamientos PlanTratamiento[]
+  seguimientos Seguimiento[]
 }
 
 model Profesion {
@@ -158,53 +157,55 @@ model Profesion {
   updateAt    DateTime @updatedAt
 
   // Relaciones
-  medicos     Medico[]
+  medicos Medico[]
 }
 
 model Servicio {
-  id          String     @id @default(uuid()) @db.VarChar(36)
-  nombre      String     @db.VarChar(150)
-  descripcion String?    @db.VarChar(255)
-  precioBase  Decimal    @db.Decimal(10, 2)
+  id          String   @id @default(uuid()) @db.VarChar(36)
+  nombre      String   @db.VarChar(150)
+  descripcion String?  @db.VarChar(255)
+  precioBase  Decimal  @db.Decimal(10, 2)
   duracionMin Int
-  activo      Boolean    @db.Bit(1)
-  createAt    DateTime   @default(now())
-  updateAt    DateTime   @updatedAt
+  activo      Boolean  @db.Bit(1)
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt
 
   // Relación muchos a muchos con Medico
-  medicosServicios MedicoServicio[]
-  consultasServicios ConsultaServicio[]
-
+  medicosServicios    MedicoServicio[]
+  consultasServicios  ConsultaServicio[]
+  cotizacionServicios CotizacionServicio[]
 
   @@map("Servicios")
+  planEtapas PlanEtapa[]
 }
 
 model Medico {
-  idEmpleado  String     @id @db.VarChar(36)
-  empleado    Empleados   @relation(fields: [idEmpleado], references: [id], onDelete: Cascade)
-  profesionId String     @db.VarChar(36)
-  profesion   Profesion  @relation(fields: [profesionId], references: [id])
-  activo      Boolean    @db.Bit(1)
-  createAt    DateTime   @default(now())
-  updateAt    DateTime   @updatedAt
+  idEmpleado  String    @id @db.VarChar(36)
+  empleado    Empleados @relation(fields: [idEmpleado], references: [id], onDelete: Cascade)
+  profesionId String    @db.VarChar(36)
+  profesion   Profesion @relation(fields: [profesionId], references: [id])
+  activo      Boolean   @db.Bit(1)
+  createAt    DateTime  @default(now())
+  updateAt    DateTime  @updatedAt
 
   // Relación muchos a muchos con Servicio
   serviciosMedicos MedicoServicio[]
 
   citas Cita[]
 
-
   @@map("Medicos")
+  planTratamientos PlanTratamiento[]
+  planEtapas PlanEtapa[]
 }
 
 model MedicoServicio {
-  id          String   @id @default(uuid())
-  medicoId    String   @db.VarChar(36)
-  servicioId  String   @db.VarChar(36)
-  createAt    DateTime @default(now())
+  id         String   @id @default(uuid())
+  medicoId   String   @db.VarChar(36)
+  servicioId String   @db.VarChar(36)
+  createAt   DateTime @default(now())
 
-  medico    Medico    @relation(fields: [medicoId], references: [idEmpleado])
-  servicio  Servicio  @relation(fields: [servicioId], references: [id])
+  medico   Medico   @relation(fields: [medicoId], references: [idEmpleado])
+  servicio Servicio @relation(fields: [servicioId], references: [id])
 
   @@unique([medicoId, servicioId])
   @@index([servicioId])
@@ -213,69 +214,203 @@ model MedicoServicio {
 
 model Consultorio {
   id        String   @id @default(uuid()) @db.VarChar(36)
-  nombre    String   @db.VarChar(50)  // Ej: "Consultorio 1", "Dental A"
+  nombre    String   @db.VarChar(50) // Ej: "Consultorio 1", "Dental A"
   ubicacion String?  @db.VarChar(150)
   activo    Boolean  @db.Bit(1)
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
 
-  citas     Cita[]
+  citas Cita[]
 }
 
 model Cita {
-  id            String   @id @default(uuid()) @db.VarChar(36)
-  pacienteId    String   @db.VarChar(36)
-  medicoId      String   @db.VarChar(36)
-  consultorioId String   @db.VarChar(36)
+  id            String @id @default(uuid()) @db.VarChar(36)
+  pacienteId    String @db.VarChar(36)
+  medicoId      String @db.VarChar(36)
+  consultorioId String @db.VarChar(36)
 
-  fechaHora     DateTime @db.DateTime(6)
-  estado        String   @db.VarChar(20) // programada, atendida, cancelada
+  fechaHora DateTime @db.DateTime(6)
+  estado    String   @db.VarChar(20) // programada, atendida, cancelada
 
-  motivo        String?  @db.VarChar(255)
-  observacion   String?  @db.VarChar(255)
+  motivo      String? @db.VarChar(255)
+  observacion String? @db.VarChar(255)
 
-  createAt      DateTime @default(now())
-  updateAt      DateTime @updatedAt
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 
   paciente    Paciente    @relation(fields: [pacienteId], references: [id])
   medico      Medico      @relation(fields: [medicoId], references: [idEmpleado])
   consultorio Consultorio @relation(fields: [consultorioId], references: [id])
 
-  consulta    Consulta?
+  consulta Consulta?
 
   @@index([pacienteId])
   @@index([medicoId])
   @@index([consultorioId])
+  seguimientos Seguimiento[]
 }
 
 model Consulta {
-  id        String   @id @default(uuid()) @db.VarChar(36)
-  citaId    String   @unique @db.VarChar(36)
+  id     String @id @default(uuid()) @db.VarChar(36)
+  citaId String @unique @db.VarChar(36)
 
   diagnostico String? @db.VarChar(255)
   notas       String? @db.Text
 
-  createAt  DateTime @default(now())
-  updateAt  DateTime @updatedAt
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 
-  cita      Cita     @relation(fields: [citaId], references: [id], onDelete: Cascade)
+  cita Cita @relation(fields: [citaId], references: [id], onDelete: Cascade)
 
-  detalles  ConsultaServicio[]
+  detalles ConsultaServicio[]
+
+  planEtapas PlanEtapa[]
 }
 
 model ConsultaServicio {
-  id          String   @id @default(uuid()) @db.VarChar(36)
-  consultaId  String   @db.VarChar(36)
-  servicioId  String   @db.VarChar(36)
+  id         String @id @default(uuid()) @db.VarChar(36)
+  consultaId String @db.VarChar(36)
+  servicioId String @db.VarChar(36)
 
-  precioAplicado Decimal @db.Decimal(10,2)
+  precioAplicado Decimal @db.Decimal(10, 2)
   cantidad       Int     @default(1)
 
-  createAt    DateTime @default(now())
+  createAt DateTime @default(now())
 
   consulta Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade)
   servicio Servicio @relation(fields: [servicioId], references: [id])
 
   @@index([consultaId])
   @@index([servicioId])
+}
+
+model Cotizacion {
+  id         String @id @default(uuid()) @db.VarChar(36)
+  pacienteId String @db.VarChar(36)
+
+  fecha  DateTime @default(now())
+  estado String   @db.VarChar(20)
+  // borrador | enviada | aceptada | rechazada | parcial
+
+  total Decimal @db.Decimal(10, 2)
+
+  observacion String? @db.VarChar(255)
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  paciente Paciente             @relation(fields: [pacienteId], references: [id])
+  detalles CotizacionServicio[]
+
+  @@index([pacienteId])
+}
+
+model CotizacionServicio {
+  id           String @id @default(uuid()) @db.VarChar(36)
+  cotizacionId String @db.VarChar(36)
+  servicioId   String @db.VarChar(36)
+
+  precioUnitario Decimal @db.Decimal(10, 2)
+  cantidad       Int     @default(1)
+
+  observacion String? @db.VarChar(255)
+
+  cotizacion Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+  servicio   Servicio   @relation(fields: [servicioId], references: [id])
+
+  @@unique([cotizacionId, servicioId])
+  @@index([servicioId])
+}
+
+
+// Estados para planes y seguimientos
+enum PlanEstado {
+  ACTIVO
+  PAUSADO
+  COMPLETADO
+  CANCELADO
+}
+
+enum SeguimientoEstado {
+  PROGRAMADO
+  REALIZADO
+  CANCELADO
+  NO_ASISTIO
+}
+
+model PlanTratamiento {
+  id                    String   @id @default(uuid()) @db.VarChar(36)
+  pacienteId            String   @db.VarChar(36)
+  nombre                String   @db.VarChar(150)      // p.ej. "Brackets - Ortodoncia completa"
+  descripcion           String?  @db.VarChar(255)
+  estado                PlanEstado @default(ACTIVO)
+  fechaInicio           DateTime @db.DateTime(6)
+  fechaFin              DateTime? @db.DateTime(6)
+  medicoResponsableId   String?  @db.VarChar(36)      // opcional: quien lidera el plan
+
+  createAt              DateTime @default(now())
+  updateAt              DateTime @updatedAt
+
+  // Relaciones
+  paciente              Paciente @relation(fields: [pacienteId], references: [id])
+  medicoResponsable     Medico?  @relation(fields: [medicoResponsableId], references: [idEmpleado])
+  etapas                PlanEtapa[]
+
+  @@index([pacienteId])
+  @@index([medicoResponsableId])
+}
+
+model PlanEtapa {
+  id                    String   @id @default(uuid()) @db.VarChar(36)
+  planId                String   @db.VarChar(36)
+  servicioId            String   @db.VarChar(36)       // servicio asociado a la etapa (p. ej. "ajuste")
+  nombre                String   @db.VarChar(150)      // p.ej. "Ajuste Mensual"
+  descripcion           String?  @db.VarChar(255)
+  orden                 Int      @default(1)            // orden en el plan
+
+  // Reglas de programación
+  intervaloDias         Int?     // cada cuántos días se repite (si aplica)
+  repeticiones          Int?     // cuántas veces (null = indefinido)
+  programarCita         Boolean  @db.Bit(1) @default(true) // si se crea una cita por cada seguimiento
+  responsableMedicoId   String?  @db.VarChar(36)        // si necesita un médico específico
+
+  crearDesdeConsultaId  String?  @db.VarChar(36)        // opcional: si la etapa se originó desde una consulta
+
+  createAt              DateTime @default(now())
+
+  // Relaciones
+  plan                  PlanTratamiento @relation(fields: [planId], references: [id], onDelete: Cascade)
+  servicio              Servicio        @relation(fields: [servicioId], references: [id])
+  responsableMedico     Medico?         @relation(fields: [responsableMedicoId], references: [idEmpleado])
+  crearDesdeConsulta    Consulta?       @relation(fields: [crearDesdeConsultaId], references: [id])
+  seguimientos          Seguimiento[]
+
+  @@index([planId])
+  @@index([servicioId])
+  @@index([responsableMedicoId])
+  @@index([crearDesdeConsultaId])
+}
+
+model Seguimiento {
+  id                String            @id @default(uuid()) @db.VarChar(36)
+  etapaId           String            @db.VarChar(36)
+  pacienteId        String            @db.VarChar(36)
+  fechaProgramada   DateTime          @db.DateTime(6)
+  fechaRealizada    DateTime?         @db.DateTime(6)
+  estado            SeguimientoEstado @default(PROGRAMADO)
+  nota              String?           @db.VarChar(255)
+  citaId            String?           @db.VarChar(36)    // si se creó una cita vinculada
+  creadoPorId       String?           @db.VarChar(36)    // usuario que creó el seguimiento
+
+  createAt          DateTime @default(now())
+  updateAt          DateTime @updatedAt
+
+  etapa             PlanEtapa @relation(fields: [etapaId], references: [id], onDelete: Cascade)
+  paciente          Paciente  @relation(fields: [pacienteId], references: [id])
+  cita              Cita?     @relation(fields: [citaId], references: [id])
+
+  @@index([etapaId])
+  @@index([pacienteId])
+  @@index([citaId])
+  @@index([fechaProgramada])
 }

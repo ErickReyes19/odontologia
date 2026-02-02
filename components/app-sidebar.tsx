@@ -15,7 +15,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Calculator, Calendar, ChevronDown, ChevronUp, File, FileCheck2, Hospital, IdCardIcon, LayersIcon, LucideFilePen, MessageCircleMore, Package, Settings, ShieldPlus, Stethoscope, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
+import {  Calendar, ChevronDown, ChevronUp, File,  Hospital, IdCardIcon, LayersIcon, Package, Settings, ShieldPlus, Stethoscope, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
 import Link from "next/link";
 import { NavUser } from "./nav-user";
 import { ModeToggle } from "./buton-theme";
@@ -106,10 +106,10 @@ const items = [
     permiso: "ver_citas",
   },
   {
-    title: "Tareas",
-    url: "/tareas",
-    icon: FileCheck2,
-    permiso: "ver_tareas",
+    title: "cotizaciones",
+    url: "/cotizaciones",
+    icon: File,
+    permiso: "ver_cotizaciones",
   }
 ];
 

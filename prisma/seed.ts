@@ -71,6 +71,11 @@ async function main() {
     { nombre: "ver_citas", descripcion: "Permiso para ver citas" },
     { nombre: "crear_citas", descripcion: "Permiso para crear citas" },
     { nombre: "editar_citas", descripcion: "Permiso para editar citas" },
+
+    // permisos cotizaciones
+    { nombre: "ver_cotizaciones", descripcion: "Permiso para ver cotizaciones" },
+    { nombre: "crear_cotizaciones", descripcion: "Permiso para crear cotizaciones" },
+    { nombre: "editar_cotizaciones", descripcion: "Permiso para editar cotizaciones" },
   ];
 
   const permisoIds: string[] = [];
