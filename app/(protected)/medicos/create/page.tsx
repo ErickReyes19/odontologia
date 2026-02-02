@@ -2,9 +2,9 @@ import { getSessionPermisos } from "@/auth";
 import HeaderComponent from "@/components/HeaderComponent";
 import NoAcceso from "@/components/noAccess";
 import { UserPlus } from "lucide-react";
-import { MedicoFormulario } from "../../pacientes/components/Form";
 import { getEmpleados } from "../../empleados/actions";
 import { getProfesionesActivas } from "../../profesiones/actions";
+import { MedicoFormulario } from "../components/Form";
 
 export default async function CreateMedico() {
   const permisos = await getSessionPermisos();
@@ -18,6 +18,7 @@ export default async function CreateMedico() {
   const profesiones = await getProfesionesActivas();
   // Inicializamos con valores vacíos para el formulario
   const initialData = {
+    id: "",
     idEmpleado: "",
     profesionId: "",
     activo: true,

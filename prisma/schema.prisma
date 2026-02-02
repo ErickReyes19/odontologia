@@ -140,12 +140,16 @@ model Paciente {
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
 
-  citas        Cita[]
-  cotizaciones Cotizacion[]
+  citas            Cita[]
+  cotizaciones     Cotizacion[]
+  planTratamientos PlanTratamiento[]
+  seguimientos     Seguimiento[]
+
+  // ---- ADICIONES (pagos/financiamientos) ----
+  pagos           Pago[]
+  financiamientos Financiamiento[]
 
   @@index([seguroId])
-  planTratamientos PlanTratamiento[]
-  seguimientos Seguimiento[]
 }
 
 model Profesion {
@@ -174,28 +178,31 @@ model Servicio {
   medicosServicios    MedicoServicio[]
   consultasServicios  ConsultaServicio[]
   cotizacionServicios CotizacionServicio[]
+  planEtapas          PlanEtapa[]
 
   @@map("Servicios")
-  planEtapas PlanEtapa[]
 }
 
 model Medico {
-  idEmpleado  String    @id @db.VarChar(36)
-  empleado    Empleados @relation(fields: [idEmpleado], references: [id], onDelete: Cascade)
+  id String @id @default(uuid()) @db.VarChar(36)
+
+  idEmpleado String    @unique @db.VarChar(36)
+  empleado   Empleados @relation(fields: [idEmpleado], references: [id], onDelete: Cascade)
+
   profesionId String    @db.VarChar(36)
   profesion   Profesion @relation(fields: [profesionId], references: [id])
-  activo      Boolean   @db.Bit(1)
-  createAt    DateTime  @default(now())
-  updateAt    DateTime  @updatedAt
 
-  // Relación muchos a muchos con Servicio
+  activo   Boolean  @db.Bit(1)
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
   serviciosMedicos MedicoServicio[]
+  citas            Cita[]
 
-  citas Cita[]
+  planTratamientos PlanTratamiento[]
+  planEtapas       PlanEtapa[]
 
   @@map("Medicos")
-  planTratamientos PlanTratamiento[]
-  planEtapas PlanEtapa[]
 }
 
 model MedicoServicio {
@@ -242,12 +249,12 @@ model Cita {
   medico      Medico      @relation(fields: [medicoId], references: [idEmpleado])
   consultorio Consultorio @relation(fields: [consultorioId], references: [id])
 
-  consulta Consulta?
+  consulta     Consulta?
+  seguimientos Seguimiento[]
 
   @@index([pacienteId])
   @@index([medicoId])
   @@index([consultorioId])
-  seguimientos Seguimiento[]
 }
 
 model Consulta {
@@ -265,6 +272,9 @@ model Consulta {
   detalles ConsultaServicio[]
 
   planEtapas PlanEtapa[]
+
+  // ---- ADICION (pagos ligados a consulta) ----
+  pagos Pago[]
 }
 
 model ConsultaServicio {
@@ -302,6 +312,10 @@ model Cotizacion {
   paciente Paciente             @relation(fields: [pacienteId], references: [id])
   detalles CotizacionServicio[]
 
+  // ---- ADICIONES (pagos/financiamientos ligados a cotización) ----
+  pagos           Pago[]
+  financiamientos Financiamiento[]
+
   @@index([pacienteId])
 }
 
@@ -322,7 +336,6 @@ model CotizacionServicio {
   @@index([servicioId])
 }
 
-
 // Estados para planes y seguimientos
 enum PlanEstado {
   ACTIVO
@@ -339,51 +352,55 @@ enum SeguimientoEstado {
 }
 
 model PlanTratamiento {
-  id                    String   @id @default(uuid()) @db.VarChar(36)
-  pacienteId            String   @db.VarChar(36)
-  nombre                String   @db.VarChar(150)      // p.ej. "Brackets - Ortodoncia completa"
-  descripcion           String?  @db.VarChar(255)
-  estado                PlanEstado @default(ACTIVO)
-  fechaInicio           DateTime @db.DateTime(6)
-  fechaFin              DateTime? @db.DateTime(6)
-  medicoResponsableId   String?  @db.VarChar(36)      // opcional: quien lidera el plan
+  id                  String     @id @default(uuid()) @db.VarChar(36)
+  pacienteId          String     @db.VarChar(36)
+  nombre              String     @db.VarChar(150) // p.ej. "Brackets - Ortodoncia completa"
+  descripcion         String?    @db.VarChar(255)
+  estado              PlanEstado @default(ACTIVO)
+  fechaInicio         DateTime   @db.DateTime(6)
+  fechaFin            DateTime?  @db.DateTime(6)
+  medicoResponsableId String?    @db.VarChar(36) // opcional: quien lidera el plan
 
-  createAt              DateTime @default(now())
-  updateAt              DateTime @updatedAt
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 
   // Relaciones
-  paciente              Paciente @relation(fields: [pacienteId], references: [id])
-  medicoResponsable     Medico?  @relation(fields: [medicoResponsableId], references: [idEmpleado])
-  etapas                PlanEtapa[]
+  paciente          Paciente    @relation(fields: [pacienteId], references: [id])
+  medicoResponsable Medico?     @relation(fields: [medicoResponsableId], references: [idEmpleado])
+  etapas            PlanEtapa[]
+
+  // ---- ADICIONES (financiamientos y pagos ligados a plan) ----
+  financiamientos Financiamiento[]
+  pagos           Pago[]
 
   @@index([pacienteId])
   @@index([medicoResponsableId])
 }
 
 model PlanEtapa {
-  id                    String   @id @default(uuid()) @db.VarChar(36)
-  planId                String   @db.VarChar(36)
-  servicioId            String   @db.VarChar(36)       // servicio asociado a la etapa (p. ej. "ajuste")
-  nombre                String   @db.VarChar(150)      // p.ej. "Ajuste Mensual"
-  descripcion           String?  @db.VarChar(255)
-  orden                 Int      @default(1)            // orden en el plan
+  id          String  @id @default(uuid()) @db.VarChar(36)
+  planId      String  @db.VarChar(36)
+  servicioId  String  @db.VarChar(36) // servicio asociado a la etapa (p. ej. "ajuste")
+  nombre      String  @db.VarChar(150) // p.ej. "Ajuste Mensual"
+  descripcion String? @db.VarChar(255)
+  orden       Int     @default(1) // orden en el plan
 
   // Reglas de programación
-  intervaloDias         Int?     // cada cuántos días se repite (si aplica)
-  repeticiones          Int?     // cuántas veces (null = indefinido)
-  programarCita         Boolean  @db.Bit(1) @default(true) // si se crea una cita por cada seguimiento
-  responsableMedicoId   String?  @db.VarChar(36)        // si necesita un médico específico
+  intervaloDias       Int? // cada cuántos días se repite (si aplica)
+  repeticiones        Int? // cuántas veces (null = indefinido)
+  programarCita       Boolean @default(true) @db.Bit(1) // si se crea una cita por cada seguimiento
+  responsableMedicoId String? @db.VarChar(36) // si necesita un médico específico
 
-  crearDesdeConsultaId  String?  @db.VarChar(36)        // opcional: si la etapa se originó desde una consulta
+  crearDesdeConsultaId String? @db.VarChar(36) // opcional: si la etapa se originó desde una consulta
 
-  createAt              DateTime @default(now())
+  createAt DateTime @default(now())
 
   // Relaciones
-  plan                  PlanTratamiento @relation(fields: [planId], references: [id], onDelete: Cascade)
-  servicio              Servicio        @relation(fields: [servicioId], references: [id])
-  responsableMedico     Medico?         @relation(fields: [responsableMedicoId], references: [idEmpleado])
-  crearDesdeConsulta    Consulta?       @relation(fields: [crearDesdeConsultaId], references: [id])
-  seguimientos          Seguimiento[]
+  plan               PlanTratamiento @relation(fields: [planId], references: [id], onDelete: Cascade)
+  servicio           Servicio        @relation(fields: [servicioId], references: [id])
+  responsableMedico  Medico?         @relation(fields: [responsableMedicoId], references: [idEmpleado])
+  crearDesdeConsulta Consulta?       @relation(fields: [crearDesdeConsultaId], references: [id])
+  seguimientos       Seguimiento[]
 
   @@index([planId])
   @@index([servicioId])
@@ -392,25 +409,142 @@ model PlanEtapa {
 }
 
 model Seguimiento {
-  id                String            @id @default(uuid()) @db.VarChar(36)
-  etapaId           String            @db.VarChar(36)
-  pacienteId        String            @db.VarChar(36)
-  fechaProgramada   DateTime          @db.DateTime(6)
-  fechaRealizada    DateTime?         @db.DateTime(6)
-  estado            SeguimientoEstado @default(PROGRAMADO)
-  nota              String?           @db.VarChar(255)
-  citaId            String?           @db.VarChar(36)    // si se creó una cita vinculada
-  creadoPorId       String?           @db.VarChar(36)    // usuario que creó el seguimiento
+  id              String            @id @default(uuid()) @db.VarChar(36)
+  etapaId         String            @db.VarChar(36)
+  pacienteId      String            @db.VarChar(36)
+  fechaProgramada DateTime          @db.DateTime(6)
+  fechaRealizada  DateTime?         @db.DateTime(6)
+  estado          SeguimientoEstado @default(PROGRAMADO)
+  nota            String?           @db.VarChar(255)
+  citaId          String?           @db.VarChar(36) // si se creó una cita vinculada
+  creadoPorId     String?           @db.VarChar(36) // usuario que creó el seguimiento
 
-  createAt          DateTime @default(now())
-  updateAt          DateTime @updatedAt
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
 
-  etapa             PlanEtapa @relation(fields: [etapaId], references: [id], onDelete: Cascade)
-  paciente          Paciente  @relation(fields: [pacienteId], references: [id])
-  cita              Cita?     @relation(fields: [citaId], references: [id])
+  etapa    PlanEtapa @relation(fields: [etapaId], references: [id], onDelete: Cascade)
+  paciente Paciente  @relation(fields: [pacienteId], references: [id])
+  cita     Cita?     @relation(fields: [citaId], references: [id])
 
   @@index([etapaId])
   @@index([pacienteId])
   @@index([citaId])
   @@index([fechaProgramada])
+}
+
+/**
+ * =========================
+ * PAGOS / FINANCIAMIENTO (SOLO AÑADIDOS)
+ * - Solo estas entidades y relaciones fueron añadidas
+ * - No se cambiaron otros modelos (salvo añadir arrays de relación)
+ * =========================
+ */
+
+// Métodos y estados
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+  SEGURO
+  OTRO
+}
+
+enum PagoEstado {
+  REGISTRADO
+  APLICADO
+  REVERTIDO
+}
+
+enum FinanciamientoEstado {
+  ACTIVO
+  PAGADO
+  VENCIDO
+  CANCELADO
+}
+
+model Pago {
+  id         String     @id @default(uuid()) @db.VarChar(36)
+  monto      Decimal    @db.Decimal(10, 2)
+  metodo     MetodoPago
+  referencia String?    @db.VarChar(100)
+  fechaPago  DateTime   @default(now()) @db.DateTime(6)
+  estado     PagoEstado @default(REGISTRADO)
+  comentario String?    @db.VarChar(255)
+
+  // Orígenes opcionales (Pago "pertenece" a uno de estos o ninguno)
+  usuarioId         String? @db.VarChar(36)
+  pacienteId        String? @db.VarChar(36)
+  consultaId        String? @db.VarChar(36)
+  cotizacionId      String? @db.VarChar(36)
+  planTratamientoId String? @db.VarChar(36)
+  financiamientoId  String? @db.VarChar(36)
+
+  // Relaciones (Pago define las FK hacia los orígenes)
+  paciente        Paciente?        @relation(fields: [pacienteId], references: [id], onDelete: SetNull)
+  consulta        Consulta?        @relation(fields: [consultaId], references: [id], onDelete: SetNull)
+  cotizacion      Cotizacion?      @relation(fields: [cotizacionId], references: [id], onDelete: SetNull)
+  planTratamiento PlanTratamiento? @relation(fields: [planTratamientoId], references: [id], onDelete: SetNull)
+  financiamiento  Financiamiento?  @relation(fields: [financiamientoId], references: [id], onDelete: SetNull)
+
+  // Relación pasiva: una colección de cuotas puede apuntar a este pago (una pago puede cubrir varias cuotas)
+  cuotas CuotaFinanciamiento[]
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  @@index([pacienteId])
+  @@index([consultaId])
+  @@index([cotizacionId])
+  @@index([planTratamientoId])
+  @@index([financiamientoId])
+}
+
+model Financiamiento {
+  id                String               @id @default(uuid()) @db.VarChar(36)
+  pacienteId        String               @db.VarChar(36)
+  cotizacionId      String?              @db.VarChar(36)
+  planTratamientoId String?              @db.VarChar(36)
+  montoTotal        Decimal              @db.Decimal(10, 2)
+  anticipo          Decimal              @default(0) @db.Decimal(10, 2)
+  saldo             Decimal              @db.Decimal(10, 2)
+  cuotas            Int
+  interes           Decimal              @default(0) @db.Decimal(5, 2)
+  fechaInicio       DateTime             @db.DateTime(6)
+  fechaFin          DateTime?            @db.DateTime(6)
+  estado            FinanciamientoEstado @default(ACTIVO)
+  createAt          DateTime             @default(now())
+  updateAt          DateTime             @updatedAt
+
+  paciente        Paciente         @relation(fields: [pacienteId], references: [id])
+  cotizacion      Cotizacion?      @relation(fields: [cotizacionId], references: [id])
+  planTratamiento PlanTratamiento? @relation(fields: [planTratamientoId], references: [id])
+
+  cuotasFinanciamiento CuotaFinanciamiento[]
+  pagos                Pago[] // pagos asociados al financiamiento (ej. anticipo, abonos)
+
+  @@index([pacienteId])
+  @@index([cotizacionId])
+  @@index([planTratamientoId])
+}
+
+model CuotaFinanciamiento {
+  id               String    @id @default(uuid()) @db.VarChar(36)
+  financiamientoId String    @db.VarChar(36)
+  numero           Int
+  monto            Decimal   @db.Decimal(10, 2)
+  fechaVencimiento DateTime  @db.DateTime(6)
+  pagada           Boolean   @default(false) @db.Bit(1)
+  fechaPago        DateTime?
+  // La FK hacia Pago está en esta tabla: muchas cuotas pueden apuntar al mismo pago (flexible)
+  pagoId           String?   @db.VarChar(36)
+
+  financiamiento Financiamiento @relation(fields: [financiamientoId], references: [id], onDelete: Cascade)
+  pago           Pago?          @relation(fields: [pagoId], references: [id], onDelete: SetNull)
+
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+
+  @@unique([financiamientoId, numero])
+  @@index([financiamientoId])
+  @@index([pagoId])
 }

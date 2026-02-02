@@ -76,6 +76,11 @@ async function main() {
     { nombre: "ver_cotizaciones", descripcion: "Permiso para ver cotizaciones" },
     { nombre: "crear_cotizaciones", descripcion: "Permiso para crear cotizaciones" },
     { nombre: "editar_cotizaciones", descripcion: "Permiso para editar cotizaciones" },
+
+    // permisos planes de tratamiento
+    { nombre: "ver_planes_tratamiento", descripcion: "Permiso para ver planes de tratamiento" },
+    { nombre: "crear_planes_tratamiento", descripcion: "Permiso para crear planes de tratamiento" },
+    { nombre: "editar_planes_tratamiento", descripcion: "Permiso para editar planes de tratamiento" },
   ];
 
   const permisoIds: string[] = [];
@@ -194,6 +199,7 @@ let medico = await prisma.medico.findFirst({ where: { idEmpleado: empleado.id } 
 if (!medico) {
   medico = await prisma.medico.create({
     data: {
+      id: randomUUID(),
       idEmpleado: empleado.id,
       profesionId: profesion.id,
       activo: true,

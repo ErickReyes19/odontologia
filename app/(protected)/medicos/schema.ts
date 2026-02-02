@@ -1,6 +1,7 @@
 import * as z from "zod";
 
 export const MedicoSchema = z.object({
+  id: z.string().optional(),
   idEmpleado: z.string().min(1),
   profesionId: z.string().min(1),
   activo: z.boolean(),

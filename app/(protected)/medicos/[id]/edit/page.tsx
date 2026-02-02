@@ -4,9 +4,9 @@ import NoAcceso from "@/components/noAccess";
 import { Pencil } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getMedicoById } from "../../actions";
-import { MedicoFormulario } from "@/app/(protected)/pacientes/components/Form";
 import { getEmpleados } from "@/app/(protected)/empleados/actions";
 import { getProfesionesActivas } from "@/app/(protected)/profesiones/actions";
+import { MedicoFormulario } from "../../components/Form";
 
 
 export default async function EditMedico({ params }: { params: { id: string } }) {
@@ -26,10 +26,12 @@ export default async function EditMedico({ params }: { params: { id: string } })
   const profesiones = await getProfesionesActivas();
   // Inicializamos solo los campos que usará el formulario
   const initialData = {
+    id: medico.id,
     idEmpleado: medico.idEmpleado,
     profesionId: medico.profesionId,
     activo: medico.activo,
   };
+  console.log("🚀 ~ EditMedico ~ initialData:", initialData)
 
   return (
     <div>

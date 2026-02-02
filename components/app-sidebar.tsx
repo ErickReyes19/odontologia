@@ -110,6 +110,12 @@ const items = [
     url: "/cotizaciones",
     icon: File,
     permiso: "ver_cotizaciones",
+  },
+  {
+    title: "Planes de Tratamiento",
+    url: "/planes-tratamiento",
+    icon: LayersIcon,
+    permiso: "ver_planes_tratamiento",
   }
 ];
 

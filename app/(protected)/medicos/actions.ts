@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { Medico, MedicoSchema } from "./schema";
 
@@ -97,6 +96,7 @@ export async function getMedicoById(idEmpleado: string): Promise<Medico | null> 
     });
     if (!r) return null;
     return {
+      id: r.id,
       idEmpleado: r.idEmpleado,
       profesionId: r.profesionId,
       activo: r.activo,
@@ -149,16 +149,16 @@ export async function createMedico(data: Medico): Promise<{ success: true; data:
  * Actualiza un médico existente
  */
 export async function updateMedico(
-  idEmpleado: string,
+  id: string,
   data: Partial<Medico>
 ): Promise<{ success: true; data: Medico } | { success: false; error: string }> {
   try {
-    if (!idEmpleado) return { success: false, error: "ID del empleado es requerido" };
+    if (!id) return { success: false, error: "ID del empleado es requerido" };
 
     const validatedData = MedicoSchema.partial().parse(data);
 
     const r = await prisma.medico.update({
-      where: { idEmpleado },
+      where: { id },
       data: {
         ...(validatedData.profesionId && { profesionId: validatedData.profesionId }),
         ...(validatedData.activo !== undefined && { activo: validatedData.activo }),
@@ -174,11 +174,11 @@ export async function updateMedico(
     };
 
     revalidatePath("/medicos");
-    revalidatePath(`/medicos/${idEmpleado}/edit`);
+    revalidatePath(`/medicos/${id}/edit`);
 
     return { success: true, data: result };
   } catch (error) {
-    console.error(`Error al actualizar médico con IDEmpleado ${idEmpleado}:`, error);
+    console.error(`Error al actualizar médico con IDEmpleado ${id}:`, error);
     if (error instanceof Error) return { success: false, error: error.message };
     return { success: false, error: "Error desconocido al actualizar médico" };
   }
@@ -188,20 +188,20 @@ export async function updateMedico(
  * Elimina un médico por IDEmpleado
  */
 export async function deleteMedico(
-  idEmpleado: string
+  id: string
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    if (!idEmpleado) return { success: false, error: "ID del empleado es requerido" };
+    if (!id) return { success: false, error: "ID del medico es requerido" };
 
     await prisma.medico.delete({
-      where: { idEmpleado },
+      where: { id },
     });
 
     revalidatePath("/medicos");
 
     return { success: true };
   } catch (error) {
-    console.error(`Error al eliminar médico con IDEmpleado ${idEmpleado}:`, error);
+    console.error(`Error al eliminar médico con IdMedico ${id}:`, error);
     if (error instanceof Error) return { success: false, error: error.message };
     return { success: false, error: "Error desconocido al eliminar médico" };
   }
