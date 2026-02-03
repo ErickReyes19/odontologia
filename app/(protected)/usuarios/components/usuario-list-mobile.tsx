@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Pencil, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Usuario } from "../type";
+import { Usuario } from "../schema";
 
 interface UserListProps {
   usuarios: Usuario[];

@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import Link from "next/link";
@@ -25,25 +25,25 @@ const getEstadoBadge = (estado: string) => {
   switch (estado) {
     case "ACTIVO":
       return (
-        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+        <Badge variant="outline" className="">
           {label}
         </Badge>
       );
     case "PAUSADO":
       return (
-        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+        <Badge variant="outline" className="">
           {label}
         </Badge>
       );
     case "COMPLETADO":
       return (
-        <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+        <Badge variant="outline" className="">
           {label}
         </Badge>
       );
     case "CANCELADO":
       return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
+        <Badge variant="outline" className="">
           {label}
         </Badge>
       );

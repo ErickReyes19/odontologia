@@ -2,7 +2,6 @@ import { getSessionPermisos } from "@/auth";
 import HeaderComponent from "@/components/HeaderComponent";
 import NoAcceso from "@/components/noAccess";
 import { ListCheck } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { getServicioById } from "../../actions";
 import { FormularioServicio } from "../../components/form";
 import { getMedicosActivos } from "@/app/(protected)/medicos/actions";

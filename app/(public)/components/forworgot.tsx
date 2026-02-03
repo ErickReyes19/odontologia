@@ -18,7 +18,6 @@ export default function ForgotPasswordForm({ onCancel, onSuccess }: ForgotPasswo
         setIsSubmitting(true);
 
         const formData = new FormData(event.currentTarget);
-        const username = formData.get("username");
 
         // Llama la action manualmente (en vez de usar form action)
         try {

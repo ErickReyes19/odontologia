@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
-import { Consulta, ConsultaSchema, ConsultaServicio } from "./schema";
+import { Consulta, ConsultaSchema } from "./schema";
 
 /**
  * Obtiene la consulta de una cita por ID de cita

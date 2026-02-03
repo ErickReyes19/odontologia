@@ -1,7 +1,7 @@
 import { getSessionPermisos } from "@/auth";
 import HeaderComponent from "@/components/HeaderComponent";
 import NoAcceso from "@/components/noAccess";
-import { ShieldPlus, Stethoscope } from "lucide-react";
+import {  Stethoscope } from "lucide-react";
 import { getMedicos } from "./actions";
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";

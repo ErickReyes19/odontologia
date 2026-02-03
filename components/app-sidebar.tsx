@@ -15,7 +15,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import {  Calendar, ChevronDown, ChevronUp, File,  Hospital, IdCardIcon, LayersIcon, Package, Settings, ShieldPlus, Stethoscope, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
+import {  Calendar, ChevronDown, ChevronUp, DollarSign, File,  Hospital, IdCardIcon, LayersIcon, Package, Settings, ShieldPlus, Stethoscope, UserIcon, UserRoundCheck, Users2, UsersIcon } from 'lucide-react';
 import Link from "next/link";
 import { NavUser } from "./nav-user";
 import { ModeToggle } from "./buton-theme";
@@ -116,6 +116,12 @@ const items = [
     url: "/planes-tratamiento",
     icon: LayersIcon,
     permiso: "ver_planes_tratamiento",
+  },
+  {
+    title: "Pagos",
+    url: "/pagos",
+    icon: DollarSign,
+    permiso: "ver_pagos",
   }
 ];
 

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
-import { Cotizacion, CotizacionSchema, CotizacionServicio } from "./schema";
+import { Cotizacion, CotizacionSchema } from "./schema";
 
 /**
  * Obtiene todas las cotizaciones

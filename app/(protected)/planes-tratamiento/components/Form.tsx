@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, Resolver, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -74,34 +74,57 @@ export function PlanFormulario({
 }: PlanFormularioProps) {
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof PlanTratamientoSchema>>({
-    resolver: zodResolver(PlanTratamientoSchema),
-    defaultValues: initialData
-      ? {
-          ...initialData,
-          fechaInicio:
-            initialData.fechaInicio instanceof Date
-              ? initialData.fechaInicio
-              : new Date(initialData.fechaInicio),
-          fechaFin:
-            initialData.fechaFin instanceof Date
-              ? initialData.fechaFin
-              : initialData.fechaFin
-                ? new Date(initialData.fechaFin)
-                : null,
-          etapas: initialData.etapas ?? [],
-        }
-      : {
-          pacienteId: defaultPacienteId ?? "",
-          nombre: "",
-          descripcion: "",
-          estado: "ACTIVO",
-          fechaInicio: new Date(),
-          fechaFin: null,
-          medicoResponsableId: "",
-          etapas: [],
-        },
-  });
+type PlanFormValues = z.infer<typeof PlanTratamientoSchema>;
+
+const form = useForm<PlanFormValues>({
+  resolver: zodResolver(PlanTratamientoSchema) as Resolver<PlanFormValues>,
+  defaultValues: initialData
+    ? {
+        ...initialData,
+        // Forzamos campos que podrían ser undefined/null a sus tipos estrictos
+        descripcion: initialData.descripcion ?? null,
+        medicoResponsableId: initialData.medicoResponsableId ?? null,
+        estado: initialData.estado,
+        fechaInicio:
+          initialData.fechaInicio instanceof Date
+            ? initialData.fechaInicio
+            : new Date(initialData.fechaInicio),
+        fechaFin:
+          initialData.fechaFin instanceof Date
+            ? initialData.fechaFin
+            : initialData.fechaFin
+              ? new Date(initialData.fechaFin)
+              : null,
+        
+        // MAPEADO EXPLÍCITO DE ETAPAS (Esto resuelve el error de 'orden')
+        etapas: (initialData.etapas ?? []).map((etapa) => ({
+          id: etapa.id,
+          planId: etapa.planId,
+          servicioId: etapa.servicioId,
+          nombre: etapa.nombre,
+          descripcion: etapa.descripcion ?? null,
+          // Aquí está la solución al error: aseguramos que 'orden' sea siempre number
+          orden: typeof etapa.orden === "number" && etapa.orden >= 1 ? etapa.orden : 1, 
+          intervaloDias: etapa.intervaloDias ?? null,
+          repeticiones: etapa.repeticiones ?? null,
+          // Aseguramos que programarCita sea boolean, no undefined
+          programarCita: !!etapa.programarCita, 
+          responsableMedicoId: etapa.responsableMedicoId ?? null,
+          crearDesdeConsultaId: etapa.crearDesdeConsultaId ?? null,
+        })),
+      }
+    : {
+        pacienteId: defaultPacienteId ?? "",
+        nombre: "",
+        descripcion: null,
+        estado: "ACTIVO",
+        fechaInicio: new Date(),
+        fechaFin: null,
+        medicoResponsableId: null,
+        etapas: [],
+      },
+});
+
 
   const { fields, append, remove, move } = useFieldArray({
     control: form.control,
@@ -112,12 +135,12 @@ export function PlanFormulario({
     append({
       servicioId: "",
       nombre: "",
-      descripcion: "",
+      descripcion: null,
       orden: fields.length + 1,
       intervaloDias: 30,
       repeticiones: 1,
       programarCita: true,
-      responsableMedicoId: "",
+      responsableMedicoId: null,
     });
   };
 
@@ -156,14 +179,16 @@ export function PlanFormulario({
     }
   };
 
-  async function onSubmit(data: z.infer<typeof PlanTratamientoSchema>) {
+  async function onSubmit(data: PlanFormValues) {
     try {
-      // Actualizar orden de etapas
+      // Actualizar orden de etapas y convertir "" a null para FKs opcionales
       const planData = {
         ...data,
+        medicoResponsableId: data.medicoResponsableId || null,
         etapas: data.etapas?.map((e, index) => ({
           ...e,
           orden: index + 1,
+          responsableMedicoId: e.responsableMedicoId || null,
         })),
       };
 
@@ -405,7 +430,7 @@ export function PlanFormulario({
         <CardContent>
           {fields.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No hay etapas agregadas. Haz clic en "Agregar Etapa" para comenzar.
+              No hay etapas agregadas. Haz clic en &quot;Agregar Etapa&quot; para comenzar.
             </div>
           ) : (
             <div className="space-y-4">

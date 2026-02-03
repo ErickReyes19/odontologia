@@ -50,7 +50,6 @@ const getEstadoBadge = (estado: string) => {
       return (
         <Badge
           variant="outline"
-          className="bg-blue-100 text-blue-800 border-blue-300"
         >
           Programada
         </Badge>
@@ -59,7 +58,6 @@ const getEstadoBadge = (estado: string) => {
       return (
         <Badge
           variant="outline"
-          className="bg-green-100 text-green-800 border-green-300"
         >
           Atendida
         </Badge>
@@ -139,7 +137,7 @@ export default function CitaListMobile({
           description: result.error || "No se pudo cambiar el estado.",
         });
       }
-    } catch (error) {
+    } catch {
       toast.error("Error", {
         description: "Ocurrio un error inesperado.",
       });
@@ -165,7 +163,7 @@ export default function CitaListMobile({
           description: result.error || "No se pudo eliminar la cita.",
         });
       }
-    } catch (error) {
+    } catch {
       toast.error("Error al eliminar", {
         description: "Ocurrio un error inesperado.",
       });

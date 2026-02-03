@@ -81,6 +81,11 @@ async function main() {
     { nombre: "ver_planes_tratamiento", descripcion: "Permiso para ver planes de tratamiento" },
     { nombre: "crear_planes_tratamiento", descripcion: "Permiso para crear planes de tratamiento" },
     { nombre: "editar_planes_tratamiento", descripcion: "Permiso para editar planes de tratamiento" },
+
+    // permisos pagos
+    { nombre: "ver_pagos", descripcion: "Permiso para ver pagos y financiamientos" },
+    { nombre: "crear_pagos", descripcion: "Permiso para registrar pagos" },
+    { nombre: "crear_financiamiento", descripcion: "Permiso para crear financiamientos" },
   ];
 
   const permisoIds: string[] = [];

@@ -30,6 +30,7 @@ import {
   Download,
   Plus,
   Eye,
+  DollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { calcularEdad } from "@/lib/utils";
@@ -37,6 +38,8 @@ import { Paciente } from "../../../schema";
 import { Cita } from "@/app/(protected)/citas/schema";
 import { Cotizacion, ESTADOS_COTIZACION } from "@/app/(protected)/cotizaciones/schema";
 import { PlanTratamiento, ESTADOS_PLAN } from "@/app/(protected)/planes-tratamiento/schema";
+import { PagoWithRelations } from "@/app/(protected)/pagos/schema";
+import { METODOS_PAGO, ESTADOS_PAGO } from "@/app/(protected)/pagos/schema";
 import { Progress } from "@/components/ui/progress";
 import { generateCotizacionPDF } from "@/lib/pdf/cotizacion-pdf";
 import { ClipboardList } from "lucide-react";
@@ -46,6 +49,7 @@ interface PacientePerfilProps {
   citas: Cita[];
   cotizaciones: Cotizacion[];
   planes: PlanTratamiento[];
+  pagos: PagoWithRelations[];
   seguroNombre?: string;
 }
 
@@ -55,7 +59,7 @@ const getEstadoBadge = (estado: string) => {
       return (
         <Badge
           variant="outline"
-          className="bg-blue-100 text-blue-800 border-blue-300"
+          className=""
         >
           Programada
         </Badge>
@@ -64,7 +68,7 @@ const getEstadoBadge = (estado: string) => {
       return (
         <Badge
           variant="outline"
-          className="bg-green-100 text-green-800 border-green-300"
+          className=""
         >
           Atendida
         </Badge>
@@ -73,7 +77,7 @@ const getEstadoBadge = (estado: string) => {
       return (
         <Badge
           variant="outline"
-          className="bg-red-100 text-red-800 border-red-300"
+          className=""
         >
           Cancelada
         </Badge>
@@ -157,11 +161,39 @@ const getEstadoPlanBadge = (estado: string) => {
   }
 };
 
+const getMetodoPagoLabel = (metodo: string) =>
+  METODOS_PAGO.find((m) => m.value === metodo)?.label ?? metodo;
+
+const getEstadoPagoBadge = (estado: string) => {
+  const info = ESTADOS_PAGO.find((e) => e.value === estado);
+  switch (estado) {
+    case "APLICADO":
+      return (
+        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+          {info?.label ?? estado}
+        </Badge>
+      );
+    case "REVERTIDO":
+      return (
+        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">
+          {info?.label ?? estado}
+        </Badge>
+      );
+    default:
+      return (
+        <Badge variant="outline" className="bg-slate-100 text-slate-800">
+          {info?.label ?? estado}
+        </Badge>
+      );
+  }
+};
+
 export function PacientePerfil({
   paciente,
   citas,
   cotizaciones,
   planes,
+  pagos,
   seguroNombre,
 }: PacientePerfilProps) {
   const initials = `${paciente.nombre?.charAt(0) ?? ""}${paciente.apellido?.charAt(0) ?? ""}`;
@@ -174,8 +206,7 @@ export function PacientePerfil({
   const citasCanceladas = citas.filter((c) => c.estado === "cancelada");
 
   // Calcular totales de cotizaciones
-  const totalCotizaciones = cotizaciones.reduce((acc, c) => acc + (c.total || 0), 0);
-  const cotizacionesAceptadas = cotizaciones.filter((c) => c.estado === "aceptada");
+
 
   // Calcular planes activos
   const planesActivos = planes.filter((p) => p.estado === "ACTIVO");
@@ -324,7 +355,7 @@ export function PacientePerfil({
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-6">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -404,6 +435,20 @@ export function PacientePerfil({
               <div>
                 <p className="text-2xl font-bold">{planesActivos.length}</p>
                 <p className="text-sm text-muted-foreground">Planes Activos</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-emerald-100 rounded-full">
+                <DollarSign className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{pagos.length}</p>
+                <p className="text-sm text-muted-foreground">Pagos</p>
               </div>
             </div>
           </CardContent>
@@ -855,6 +900,96 @@ export function PacientePerfil({
                 <Button variant="outline" className="mt-4">
                   <Plus className="h-4 w-4 mr-2" />
                   Crear Primer Plan
+                </Button>
+              </Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Historial de Pagos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Historial de Pagos
+            </span>
+            <Link href={`/pagos?pacienteId=${paciente.id}`}>
+              <Button size="sm">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Registrar Pago
+              </Button>
+            </Link>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {pagos.length > 0 ? (
+            <>
+              <div className="hidden md:block rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Monto</TableHead>
+                      <TableHead>Método</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Origen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagos.map((pago) => (
+                      <TableRow key={pago.id}>
+                        <TableCell>
+                          {format(new Date(pago.fechaPago), "PPP", { locale: es })}
+                        </TableCell>
+                        <TableCell className="font-mono font-medium">
+                          L {pago.monto.toLocaleString("es-HN")}
+                        </TableCell>
+                        <TableCell>{getMetodoPagoLabel(pago.metodo)}</TableCell>
+                        <TableCell>{getEstadoPagoBadge(pago.estado)}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {pago.consultaRef || pago.cotizacionRef || pago.planRef || pago.financiamientoRef || "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="md:hidden space-y-3">
+                {pagos.map((pago) => (
+                  <Card key={pago.id}>
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">
+                            L {pago.monto.toLocaleString("es-HN")}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(pago.fechaPago), "PPP", { locale: es })} · {getMetodoPagoLabel(pago.metodo)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {pago.consultaRef || pago.cotizacionRef || pago.planRef || pago.financiamientoRef || "-"}
+                          </p>
+                        </div>
+                        {getEstadoPagoBadge(pago.estado)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-10 bg-muted/30 rounded-lg">
+              <DollarSign className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+              <p className="text-muted-foreground">
+                Este paciente no tiene pagos registrados.
+              </p>
+              <Link href="/pagos">
+                <Button variant="outline" className="mt-4">
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Registrar Pago
                 </Button>
               </Link>
             </div>

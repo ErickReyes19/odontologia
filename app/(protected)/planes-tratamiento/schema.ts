@@ -23,10 +23,10 @@ export const PlanEtapaSchema = z.object({
   servicioId: z.string().min(1, "El servicio es requerido"),
   nombre: z.string().min(1, "El nombre es requerido").max(150),
   descripcion: z.string().max(255).optional().nullable(),
-  orden: z.number().min(1).default(1),
+  orden: z.number().min(1),
   intervaloDias: z.number().min(1).optional().nullable(),
   repeticiones: z.number().min(1).optional().nullable(),
-  programarCita: z.boolean().default(true),
+  programarCita: z.boolean(),
   responsableMedicoId: z.string().optional().nullable(),
   crearDesdeConsultaId: z.string().optional().nullable(),
   // Para mostrar en UI
@@ -59,7 +59,7 @@ export const PlanTratamientoSchema = z.object({
   pacienteId: z.string().min(1, "El paciente es requerido"),
   nombre: z.string().min(1, "El nombre es requerido").max(150),
   descripcion: z.string().max(255).optional().nullable(),
-  estado: z.string().default("ACTIVO"),
+  estado: z.enum(["ACTIVO", "PAUSADO", "COMPLETADO", "CANCELADO"]),
   fechaInicio: z.date({
     required_error: "La fecha de inicio es requerida",
     invalid_type_error: "La fecha debe ser válida",

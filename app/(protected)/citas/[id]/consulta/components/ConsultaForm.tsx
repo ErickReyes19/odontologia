@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PagoFormModal } from "@/app/(protected)/pagos/components/PagoFormModal";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -86,6 +87,10 @@ interface ConsultaFormProps {
 export function ConsultaForm({ cita, consulta, servicios }: ConsultaFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPagoModal, setShowPagoModal] = useState(false);
+  const [savedConsultaForPago, setSavedConsultaForPago] = useState<{
+    id: string;
+  } | null>(null);
 
   const form = useForm<Consulta>({
     resolver: zodResolver(ConsultaSchema),
@@ -132,7 +137,10 @@ export function ConsultaForm({ cita, consulta, servicios }: ConsultaFormProps) {
     }
   };
 
-  const onSubmit = async (data: Consulta) => {
+  const onSubmit = async (
+    data: Consulta,
+    options?: { openPagoModal?: boolean }
+  ) => {
     setIsSubmitting(true);
 
     try {
@@ -142,8 +150,18 @@ export function ConsultaForm({ cita, consulta, servicios }: ConsultaFormProps) {
         toast.success("Consulta guardada", {
           description: "La consulta se ha guardado correctamente.",
         });
-        router.push("/citas");
-        router.refresh();
+        if (
+          options?.openPagoModal &&
+          result.data &&
+          typeof result.data.id === 'string' &&
+          calcularTotal() > 0
+        ) {
+          setSavedConsultaForPago({ id: result.data.id });
+          setShowPagoModal(true);
+        } else {
+          router.push("/citas");
+          router.refresh();
+        }
       } else {
         toast.error("Error al guardar", {
           description: result.error || "No se pudo guardar la consulta.",
@@ -269,7 +287,10 @@ export function ConsultaForm({ cita, consulta, servicios }: ConsultaFormProps) {
       <Separator />
 
       {/* Formulario de Consulta */}
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit((data) => onSubmit(data))}
+        className="space-y-6"
+      >
         {/* Diagnostico y Notas */}
         <Card>
           <CardHeader>
@@ -558,12 +579,26 @@ export function ConsultaForm({ cita, consulta, servicios }: ConsultaFormProps) {
                   })}
                 </div>
 
-                {/* Total */}
-                <div className="flex justify-end pt-4 border-t">
+                {/* Total y Registrar Pago */}
+                <div className="flex flex-col sm:flex-row justify-end items-end gap-4 pt-4 border-t">
                   <div className="bg-muted rounded-lg px-6 py-3">
                     <span className="text-muted-foreground mr-2">Total:</span>
                     <span className="text-xl font-bold">L. {calcularTotal().toFixed(2)}</span>
                   </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() =>
+                      form.handleSubmit((data) =>
+                        onSubmit(data, { openPagoModal: true })
+                      )()
+                    }
+                    disabled={isSubmitting || calcularTotal() <= 0}
+                    className="shrink-0"
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Guardar y Registrar Pago
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -577,7 +612,7 @@ export function ConsultaForm({ cita, consulta, servicios }: ConsultaFormProps) {
         </Card>
 
         {/* Submit Button */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-wrap justify-end gap-4">
           <Button
             type="button"
             variant="outline"
@@ -600,6 +635,40 @@ export function ConsultaForm({ cita, consulta, servicios }: ConsultaFormProps) {
           </Button>
         </div>
       </form>
+
+      {/* Modal para registrar pago de la consulta */}
+      <PagoFormModal
+        open={showPagoModal}
+        onOpenChange={(open) => {
+          setShowPagoModal(open);
+          if (!open) {
+            setSavedConsultaForPago(null);
+            router.push("/citas");
+            router.refresh();
+          }
+        }}
+        pacienteId={cita.paciente?.id}
+        consultaId={savedConsultaForPago?.id ?? consulta?.id ?? undefined}
+        monto={calcularTotal()}
+        pacientes={
+          cita.paciente
+            ? [
+                {
+                  id: cita.paciente.id,
+                  nombre: cita.paciente.nombre,
+                  apellido: cita.paciente.apellido,
+                },
+              ]
+            : []
+        }
+        financiamientos={[]}
+        onSuccess={() => {
+          setShowPagoModal(false);
+          setSavedConsultaForPago(null);
+          router.push("/citas");
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

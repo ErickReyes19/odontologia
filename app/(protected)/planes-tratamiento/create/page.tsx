@@ -34,6 +34,17 @@ export default async function Create({ searchParams }: CreatePageProps) {
       />
       <PlanFormulario
         isUpdate={false}
+        // Pasamos initialData explícitamente para evitar el error de tipos en el componente hijo
+        initialData={{
+          pacienteId: pacienteId ?? "",
+          nombre: "",
+          descripcion: null,
+          estado: "ACTIVO",
+          fechaInicio: new Date(),
+          fechaFin: null,
+          medicoResponsableId: null,
+          etapas: [],
+        }}
         pacientes={pacientes}
         servicios={servicios}
         medicos={medicos}

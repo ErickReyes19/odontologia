@@ -23,7 +23,7 @@ export const MedicoSchema = z.object({
       id: z.string(),
       nombre: z.string(),
       descripcion: z.string(),
-      activo: z.boolean(),
+      activo: z.boolean(), 
     })
     .optional(),
 });

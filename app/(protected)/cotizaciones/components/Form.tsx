@@ -315,7 +315,7 @@ export function CotizacionFormulario({
         <CardContent>
           {fields.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No hay servicios agregados. Haz clic en "Agregar Servicio" para
+              No hay servicios agregados. Haz clic en &quot;Agregar Servicio&quot; para
               comenzar.
             </div>
           ) : (

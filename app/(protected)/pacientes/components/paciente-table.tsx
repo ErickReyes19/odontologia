@@ -21,7 +21,7 @@ export function PacienteTable({ initialData }: PacienteTableProps) {
   const [page, setPage] = React.useState(initialData.page);
   const [pageSize] = React.useState(initialData.pageSize);
   const [pageCount, setPageCount] = React.useState(initialData.pageCount);
-  const [loading, setLoading] = React.useState(false);
+  const [, setLoading] = React.useState(false);
 
   const handlePageChange = async (newPage: number) => {
     if (newPage < 1 || newPage > pageCount) return;

@@ -56,6 +56,7 @@ import {
   ESTADOS_SEGUIMIENTO,
 } from "../schema";
 import { updateEstadoPlan, updateSeguimiento } from "../actions";
+import { PlanEstado, SeguimientoEstado } from "@/lib/generated/prisma";
 
 interface PlanDetailViewProps {
   plan: PlanTratamiento;
@@ -68,25 +69,25 @@ const getEstadoBadge = (estado: string) => {
   switch (estado) {
     case "ACTIVO":
       return (
-        <Badge className="bg-green-100 text-green-800 border-green-300">
+        <Badge className="">
           {label}
         </Badge>
       );
     case "PAUSADO":
       return (
-        <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+        <Badge className="">
           {label}
         </Badge>
       );
     case "COMPLETADO":
       return (
-        <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+        <Badge className="">
           {label}
         </Badge>
       );
     case "CANCELADO":
       return (
-        <Badge className="bg-red-100 text-red-800 border-red-300">
+        <Badge className="">
           {label}
         </Badge>
       );
@@ -140,7 +141,7 @@ export function PlanDetailView({ plan }: PlanDetailViewProps) {
   const completados = plan.seguimientosCompletados || 0;
   const porcentaje = totalSeguimientos > 0 ? Math.round((completados / totalSeguimientos) * 100) : 0;
 
-  const handleUpdateEstadoPlan = async (nuevoEstado: string) => {
+  const handleUpdateEstadoPlan = async (nuevoEstado: PlanEstado) => {
     const result = await updateEstadoPlan(plan.id!, nuevoEstado);
     if (result.success) {
       toast.success(`Plan ${nuevoEstado.toLowerCase()} correctamente`);
@@ -148,6 +149,7 @@ export function PlanDetailView({ plan }: PlanDetailViewProps) {
       toast.error(result.error);
     }
   };
+
 
   const handleOpenUpdateSeguimiento = (seguimiento: Seguimiento) => {
     setSelectedSeguimiento(seguimiento);
@@ -161,7 +163,7 @@ export function PlanDetailView({ plan }: PlanDetailViewProps) {
 
     setIsUpdating(true);
     const result = await updateSeguimiento(selectedSeguimiento.id!, {
-      estado: nuevoEstado,
+      estado: nuevoEstado as unknown as SeguimientoEstado,
       fechaRealizada: nuevoEstado === "REALIZADO" ? new Date() : null,
       nota: nota || null,
     });
@@ -343,51 +345,42 @@ export function PlanDetailView({ plan }: PlanDetailViewProps) {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {plan.seguimientos.map((seguimiento) => (
-                          <TableRow key={seguimiento.id}>
-                            <TableCell>
-                              {seguimiento.estado === "PROGRAMADO"
-                                ? getFechaStatus(seguimiento.fechaProgramada)
-                                : format(
-                                    new Date(seguimiento.fechaProgramada),
-                                    "PPP",
-                                    { locale: es }
-                                  )}
-                            </TableCell>
-                            <TableCell>{seguimiento.etapaNombre}</TableCell>
-                            <TableCell>{seguimiento.servicioNombre}</TableCell>
-                            <TableCell>
-                              {getSeguimientoBadge(seguimiento.estado)}
-                            </TableCell>
-                            <TableCell className="max-w-[150px] truncate">
-                              {seguimiento.nota || "-"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                {seguimiento.estado === "PROGRAMADO" && (
-                                  <>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleOpenUpdateSeguimiento(seguimiento)
-                                      }
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Link
-                                      href={`/citas/create?pacienteId=${plan.pacienteId}`}
-                                    >
-                                      <Button variant="ghost" size="sm">
-                                        <CalendarPlus className="h-4 w-4" />
+                        {plan.seguimientos
+                          ?.sort((a, b) => new Date(a.fechaProgramada).getTime() - new Date(b.fechaProgramada).getTime())
+                          .map((seguimiento) => (
+                            <TableRow key={seguimiento.id}>
+                              <TableCell>
+                                {seguimiento.estado === "PROGRAMADO"
+                                  ? getFechaStatus(seguimiento.fechaProgramada)
+                                  : format(new Date(seguimiento.fechaProgramada), "PPP", { locale: es })}
+                              </TableCell>
+                              <TableCell>{seguimiento.etapaNombre}</TableCell>
+                              <TableCell>{seguimiento.servicioNombre}</TableCell>
+                              <TableCell>{getSeguimientoBadge(seguimiento.estado)}</TableCell>
+                              <TableCell className="max-w-[150px] truncate">{seguimiento.nota || "-"}</TableCell>
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  {seguimiento.estado === "PROGRAMADO" && (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleOpenUpdateSeguimiento(seguimiento)}
+                                      >
+                                        <Pencil className="h-4 w-4" />
                                       </Button>
-                                    </Link>
-                                  </>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                      <Link href={`/citas/create?pacienteId=${plan.pacienteId}`}>
+                                        <Button variant="ghost" size="sm">
+                                          <CalendarPlus className="h-4 w-4" />
+                                        </Button>
+                                      </Link>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+
                       </TableBody>
                     </Table>
                   </div>
@@ -407,10 +400,10 @@ export function PlanDetailView({ plan }: PlanDetailViewProps) {
                                 {seguimiento.estado === "PROGRAMADO"
                                   ? getFechaStatus(seguimiento.fechaProgramada)
                                   : format(
-                                      new Date(seguimiento.fechaProgramada),
-                                      "PPP",
-                                      { locale: es }
-                                    )}
+                                    new Date(seguimiento.fechaProgramada),
+                                    "PPP",
+                                    { locale: es }
+                                  )}
                               </div>
                               {seguimiento.nota && (
                                 <p className="text-sm text-muted-foreground">
@@ -513,15 +506,14 @@ export function PlanDetailView({ plan }: PlanDetailViewProps) {
                     {plan.seguimientos.map((seguimiento) => (
                       <div key={seguimiento.id} className="relative pl-10">
                         <div
-                          className={`absolute left-2 w-5 h-5 rounded-full border-2 ${
-                            seguimiento.estado === "REALIZADO"
+                          className={`absolute left-2 w-5 h-5 rounded-full border-2 ${seguimiento.estado === "REALIZADO"
                               ? "bg-green-500 border-green-500"
                               : seguimiento.estado === "CANCELADO"
                                 ? "bg-gray-400 border-gray-400"
                                 : seguimiento.estado === "NO_ASISTIO"
                                   ? "bg-red-500 border-red-500"
                                   : "bg-background border-primary"
-                          }`}
+                            }`}
                         >
                           {seguimiento.estado === "REALIZADO" && (
                             <CheckCircle2 className="h-4 w-4 text-white" />

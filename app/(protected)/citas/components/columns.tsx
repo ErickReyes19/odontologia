@@ -35,11 +35,11 @@ import { deleteCita, cambiarEstadoCita } from "../actions";
 const getEstadoBadge = (estado: string) => {
   switch (estado) {
     case "programada":
-      return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Programada</Badge>;
+      return <Badge variant="outline" className="">Programada</Badge>;
     case "atendida":
-      return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">Atendida</Badge>;
+      return <Badge variant="outline" className="">Atendida</Badge>;
     case "cancelada":
-      return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">Cancelada</Badge>;
+      return <Badge variant="outline" className="">Cancelada</Badge>;
     default:
       return <Badge variant="outline">{estado}</Badge>;
   }
@@ -178,7 +178,7 @@ function ActionsCell({ cita }: { cita: Cita }) {
           description: result.error || "No se pudo eliminar la cita.",
         });
       }
-    } catch (error) {
+    } catch  {
       toast.error("Error al eliminar", {
         description: "Ocurrio un error inesperado.",
       });
@@ -203,7 +203,7 @@ function ActionsCell({ cita }: { cita: Cita }) {
           description: result.error || "No se pudo cambiar el estado.",
         });
       }
-    } catch (error) {
+    } catch  {
       toast.error("Error", {
         description: "Ocurrio un error inesperado.",
       });

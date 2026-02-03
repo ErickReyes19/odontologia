@@ -1,22 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import {
-  ColumnDef,
-  SortingState,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  getPaginationRowModel,
+  SortingState,
+  getSortedRowModel,
+  ColumnFiltersState,
+  getFilteredRowModel,
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -25,61 +22,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { PagoWithRelations } from "../schema";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  page: number;
-  pageSize: number;
-  pageCount: number;
-  onPageChange: (page: number) => void;
+interface DataTableProps {
+  columns: ColumnDef<PagoWithRelations>[];
+  data: PagoWithRelations[];
+  onRevertPago?: (id: string) => void;
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-  page,
-  pageSize,
-  pageCount,
-  onPageChange,
-}: DataTableProps<TData, TValue>) {
+export function DataTable({ columns, data }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters] = React.useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = React.useState("");
+  const [globalFilter, setGlobalFilter] = React.useState<string>("");
 
   const table = useReactTable({
     data,
     columns,
-    pageCount,
-    manualPagination: true,
-
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       columnFilters,
       globalFilter,
-      pagination: {
-        pageIndex: page - 1,
-        pageSize,
-      },
     },
-
-    onPaginationChange: (updater) => {
-      const next =
-        typeof updater === "function"
-          ? updater({ pageIndex: page - 1, pageSize })
-          : updater;
-      onPageChange(next.pageIndex + 1);
-    },
-
-    onSortingChange: setSorting,
-
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-
     globalFilterFn: (row) => {
-      const values = Object.values(row.original as any);
-      return values.some((value) =>
+      const rowValues = Object.values(row.original as Record<string, unknown>);
+      return rowValues.some((value) =>
         String(value).toLowerCase().includes(globalFilter.toLowerCase())
       );
     },
@@ -87,23 +58,16 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="rounded-md border p-4">
-      <div className="flex flex-col md:flex-row items-center py-4 justify-between gap-2">
+      <div className="flex flex-col md:flex-row items-center py-4 justify-between space-y-2 md:space-y-0 md:space-x-4">
         <Input
-          placeholder="Filtrar citas..."
+          placeholder="Filtrar pagos..."
           value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          onChange={(event) => setGlobalFilter(event.target.value)}
           className="w-full md:max-w-sm"
         />
-
-        <Link href="/citas/create" className="w-full md:w-auto">
-          <Button className="w-full md:w-auto flex items-center gap-2">
-            Nueva cita
-            <Plus className="h-4 w-4" />
-          </Button>
-        </Link>
       </div>
 
-      <div className="rounded-md border overflow-x-auto">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -121,11 +85,13 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-
           <TableBody>
-            {data.length > 0 ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -146,26 +112,20 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(page - 1)}
-          disabled={page <= 1}
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
         >
           Anterior
         </Button>
-
-        <span className="text-sm text-muted-foreground">
-          Pagina {page} de {pageCount}
-        </span>
-
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(page + 1)}
-          disabled={page >= pageCount}
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
         >
           Siguiente
         </Button>
