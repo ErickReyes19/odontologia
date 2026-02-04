@@ -481,6 +481,7 @@ model Seguimiento {
   @@index([pacienteId])
   @@index([citaId])
   @@index([fechaProgramada])
+  consultas Consulta[]
 }
 
 /**
@@ -561,6 +562,7 @@ model Financiamiento {
   @@index([pacienteId])
   @@index([cotizacionId])
   @@index([planTratamientoId])
+  consultas Consulta[]
 }
 
 enum OrdenCobroEstado {

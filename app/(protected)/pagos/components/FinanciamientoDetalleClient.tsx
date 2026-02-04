@@ -26,6 +26,7 @@ import { OrdenCobroFormModal } from "@/app/(protected)/ordenes-cobro/components/
 interface FinanciamientoDetalleClientProps {
   financiamiento: FinanciamientoDetalle;
   financiamientosParaPago: {
+    pacienteId: string;
     id: string;
     pacienteNombre: string;
     cuotasLista: { id: string; numero: number; monto: number; pagada: boolean }[];
@@ -174,8 +175,6 @@ export function FinanciamientoDetalleClient({
       <OrdenCobroFormModal
         open={ordenModalOpen}
         onOpenChange={setOrdenModalOpen}
-        pacienteId={financiamiento.pacienteId}
-        financiamientoId={financiamiento.id}
         pacientes={[
           {
             id: financiamiento.pacienteId,
@@ -194,8 +193,12 @@ export function FinanciamientoDetalleClient({
           pacienteNombre: orden.pacienteNombre ?? "",
           monto: orden.monto,
           financiamientoId: orden.financiamientoId,
+          pacienteId: orden.pacienteId,
         }))}
-        financiamientos={financiamientosParaPago}
+        financiamientos={financiamientosParaPago.map(fin => ({
+          ...fin,
+          pacienteId: fin.pacienteId ?? financiamiento.pacienteId,
+        }))}
         onSuccess={() => router.refresh()}
       />
     </div>

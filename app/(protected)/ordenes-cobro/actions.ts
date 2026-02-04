@@ -69,6 +69,35 @@ export async function getOrdenesCobro(): Promise<OrdenCobroWithRelations[]> {
   }
 }
 
+export async function getCuotaPendiente(financiamientoId: string) {
+  return prisma.cuotaFinanciamiento.findFirst({
+    where: {
+      financiamientoId,
+      pagada: false,
+    },
+    orderBy: { fechaVencimiento: "asc" },
+  });
+}
+export async function getPlanesByPaciente(pacienteId: string) {
+  return prisma.planTratamiento.findMany({
+    where: { pacienteId },
+    select: {
+      id: true,
+      nombre: true,
+    },
+  });
+}
+
+export async function getFinanciamientosByPaciente(pacienteId: string) {
+  return prisma.financiamiento.findMany({
+    where: { pacienteId },
+    select: {
+      id: true,
+    },
+  });
+}
+
+
 export async function getOrdenesCobroPendientes(): Promise<OrdenCobroWithRelations[]> {
   try {
     const records = await prisma.ordenDeCobro.findMany({
