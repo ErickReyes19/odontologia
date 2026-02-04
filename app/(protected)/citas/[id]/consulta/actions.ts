@@ -433,7 +433,7 @@ export async function finalizarConsulta(
         planTratamientoId = seguimiento.etapa.planId;
       }
 
-      let financiamientoId: string | null = validatedData.financiamientoId ?? null;
+      const financiamientoId: string | null = validatedData.financiamientoId ?? null;
       let cuotaSeleccionada: { id: string; numero: number; monto: number } | null = null;
       if (financiamientoId) {
         const financiamiento = await tx.financiamiento.findUnique({

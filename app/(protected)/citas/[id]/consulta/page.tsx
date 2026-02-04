@@ -52,8 +52,9 @@ export default async function ConsultaPage({ params }: ConsultaPageProps) {
         consulta={consulta}
         servicios={servicios}
         productos={productos}
-        seguimientos={seguimientos}
+        seguimientos={seguimientos.map(s => ({ ...s, id: s.id ?? '' }))}
         financiamientos={financiamientos}
+
       />
     </div>
   );

@@ -21,10 +21,8 @@ interface OrdenesCobroPageClientProps {
 export function OrdenesCobroPageClient({
   ordenes,
   pacientes,
-  planes,
-  financiamientos,
 }: OrdenesCobroPageClientProps) {
-  const router = useRouter();
+  const router = useRouter(); 
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleAnular = async (id: string) => {
@@ -52,10 +50,8 @@ export function OrdenesCobroPageClient({
 
       <OrdenCobroFormModal
         open={modalOpen}
-        onOpenChange={setModalOpen}
+        onOpenChange={(open) => setModalOpen(open)}
         pacientes={pacientes}
-        planes={planes}
-        financiamientos={financiamientos}
         onSuccess={() => {
           setModalOpen(false);
           router.refresh();
