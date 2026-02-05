@@ -10,6 +10,7 @@ import { getColumns } from "./columns";
 import { OrdenCobroFormModal } from "./OrdenCobroFormModal";
 import type { OrdenCobroWithRelations } from "../schema";
 import { anularOrdenCobro } from "../actions";
+import OrdenesCobroListMobile from "./ordenes-cobro-list-mobile";
 
 interface OrdenesCobroPageClientProps {
   ordenes: OrdenCobroWithRelations[];
@@ -46,7 +47,12 @@ export function OrdenesCobroPageClient({
         </Button>
       </div>
 
-      <DataTable columns={columns} data={ordenes} />
+      <div className="hidden md:block">
+        <DataTable columns={columns} data={ordenes} />
+      </div>
+      <div className="block md:hidden">
+        <OrdenesCobroListMobile ordenes={ordenes} onAnular={handleAnular} />
+      </div>
 
       <OrdenCobroFormModal
         open={modalOpen}
