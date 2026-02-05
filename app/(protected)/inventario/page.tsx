@@ -5,6 +5,7 @@ import { DataTable } from "./components/data-table";
 import { getSessionPermisos } from "@/auth";
 import { getProductos } from "./actions";
 import { columns } from "./components/columns";
+import InventarioListMobile from "./components/inventario-list-mobile";
 
 export default async function InventarioPage() {
   const permisos = await getSessionPermisos();
@@ -23,7 +24,12 @@ export default async function InventarioPage() {
         description="Listado de productos en inventario"
       />
 
-      <DataTable columns={columns} data={productos} />
+      <div className="hidden md:block">
+        <DataTable columns={columns} data={productos} />
+      </div>
+      <div className="block md:hidden">
+        <InventarioListMobile productos={productos} />
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { DataTable } from "./components/data-table"; // Tu componente DataTable
 import { getSessionPermisos } from "@/auth";
 import { getServicios } from "./actions";
 import { columns } from "./components/columns";
+import ServicioListMobile from "./components/servicio-list-mobile";
 
 export default async function VerServiciosPage() {
   const permisos = await getSessionPermisos();
@@ -24,7 +25,12 @@ export default async function VerServiciosPage() {
         description="Listado de todos los servicios disponibles"
       />
 
-      <DataTable columns={columns} data={servicios} />
+      <div className="hidden md:block">
+        <DataTable columns={columns} data={servicios} />
+      </div>
+      <div className="block md:hidden">
+        <ServicioListMobile servicios={servicios} />
+      </div>
     </div>
   );
 }
