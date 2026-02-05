@@ -20,28 +20,52 @@ import {
   Receipt,
   Users,
 } from "lucide-react";
-import { endOfDay, endOfMonth, format, startOfDay, startOfMonth } from "date-fns";
+import {
+  addHours,
+  endOfDay,
+  endOfMonth,
+  format,
+  startOfDay,
+  startOfMonth,
+} from "date-fns";
 import { es } from "date-fns/locale";
 
 const formatMoney = (value: number) => `L ${value.toLocaleString("es-HN")}`;
+
+const CENTRAL_AMERICA_OFFSET_HOURS = 6;
+
+const toCentralAmericaTime = (date: Date) =>
+  addHours(date, -CENTRAL_AMERICA_OFFSET_HOURS);
+
+const toUtcFromCentralAmerica = (date: Date) =>
+  addHours(date, CENTRAL_AMERICA_OFFSET_HOURS);
 
 const getOrdenEstadoBadge = (estado: string) => {
   switch (estado) {
     case "PENDIENTE":
       return (
-        <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200">
+        <Badge
+          variant="outline"
+          className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800"
+        >
           Pendiente
         </Badge>
       );
     case "PAGADA":
       return (
-        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+        <Badge
+          variant="outline"
+          className="bg-green-100 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-200 dark:border-green-800"
+        >
           Pagada
         </Badge>
       );
     case "ANULADA":
       return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
+        <Badge
+          variant="outline"
+          className="bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-200 dark:border-red-800"
+        >
           Anulada
         </Badge>
       );
@@ -58,6 +82,10 @@ export default async function DashboardPage() {
   }
 
   const today = new Date();
+  const todayStartUtc = toUtcFromCentralAmerica(startOfDay(today));
+  const todayEndUtc = toUtcFromCentralAmerica(endOfDay(today));
+  const monthStartUtc = toUtcFromCentralAmerica(startOfMonth(today));
+  const monthEndUtc = toUtcFromCentralAmerica(endOfMonth(today));
   const [
     gananciasDia,
     gananciasMes,
@@ -73,8 +101,8 @@ export default async function DashboardPage() {
       _sum: { monto: true },
       where: {
         fechaPago: {
-          gte: startOfDay(today),
-          lte: endOfDay(today),
+          gte: todayStartUtc,
+          lte: todayEndUtc,
         },
         estado: { not: "REVERTIDO" },
       },
@@ -83,8 +111,8 @@ export default async function DashboardPage() {
       _sum: { monto: true },
       where: {
         fechaPago: {
-          gte: startOfMonth(today),
-          lte: endOfMonth(today),
+          gte: monthStartUtc,
+          lte: monthEndUtc,
         },
         estado: { not: "REVERTIDO" },
       },
@@ -240,7 +268,9 @@ export default async function DashboardPage() {
                           {pago.ordenCobro.paciente.nombre} {pago.ordenCobro.paciente.apellido}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(pago.fechaPago), "PP", { locale: es })}
+                          {format(toCentralAmericaTime(new Date(pago.fechaPago)), "PP", {
+                            locale: es,
+                          })}
                         </TableCell>
                         <TableCell className="font-mono font-medium">
                           {formatMoney(Number(pago.monto))}
